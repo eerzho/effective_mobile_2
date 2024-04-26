@@ -8,10 +8,10 @@ import (
 )
 
 type Config struct {
-	Http     Http     `yaml:"http"`
-	Postgres Postgres `yaml:"postgres"`
-	Jwt      Jwt      `yaml:"jwt"`
-	Logger   Logger   `yaml:"logger"`
+	Http     Http
+	Postgres Postgres
+	Jwt      Jwt
+	Logger   Logger
 }
 
 type Http struct {
