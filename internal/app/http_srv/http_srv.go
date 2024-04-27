@@ -11,6 +11,10 @@ import (
 
 	"effective_mobile_2/internal/app_log"
 	"effective_mobile_2/internal/config"
+	"effective_mobile_2/internal/database"
+	carH "effective_mobile_2/internal/handler/http/car"
+	carGR "effective_mobile_2/internal/repository/gorm/car"
+	carS "effective_mobile_2/internal/service/car"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -68,5 +72,8 @@ func setupMiddleware(router *chi.Mux) {
 }
 
 func setupEndpoints(router *chi.Mux) {
-
+	carRepository := carGR.New(database.Db().Gorm)
+	carService := carS.New(carRepository)
+	carHandler := carH.New(carService)
+	router.Get("/cars", carHandler.Index())
 }
