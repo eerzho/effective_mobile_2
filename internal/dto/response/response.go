@@ -1,8 +1,7 @@
 package response
 
 type Error struct {
-	Error  string   `json:"error"`
-	Errors []string `json:"errors,omitempty"`
+	Error string `json:"error"`
 }
 
 type Success struct {

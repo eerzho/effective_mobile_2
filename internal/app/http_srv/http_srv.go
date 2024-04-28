@@ -76,4 +76,6 @@ func setupEndpoints(router *chi.Mux) {
 	carService := carS.New(carRepository)
 	carHandler := carH.New(carService)
 	router.Get("/cars", carHandler.Index())
+	router.Patch("/cars/{id}", carHandler.Update())
+	router.Delete("/cars/{id}", carHandler.Delete())
 }

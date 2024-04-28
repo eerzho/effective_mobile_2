@@ -28,7 +28,7 @@ func New(db *gorm.DB) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) List(qry query.CarList) (*[]model.Car, error) {
+func (r *Repository) List(qry *query.CarList) (*[]model.Car, error) {
 	const op = "repository.gorm.car.List"
 	log := app_log.Logger().With(slog.String("op", op))
 
@@ -37,6 +37,9 @@ func (r *Repository) List(qry query.CarList) (*[]model.Car, error) {
 	log.Info("searching cars")
 	builder := r.db.Model(&Car{})
 
+	if qry.RegNum != nil {
+		builder.Where("reg_num = ?", *qry.RegNum)
+	}
 	if qry.Mark != nil {
 		builder = builder.Where("mark LIKE ?", "%"+*qry.Mark+"%")
 	}
@@ -46,16 +49,16 @@ func (r *Repository) List(qry query.CarList) (*[]model.Car, error) {
 	if qry.Year != nil {
 		builder = builder.Where("year = ?", qry.Year)
 	}
-	if qry.OwnerSurname != nil {
-		builder = builder.Where("owner.surname = ?", qry.OwnerSurname)
-	}
 
 	builder.Preload("Owner")
-	builder = builder.Limit(qry.Count).Offset(qry.Page - 1)
+	builder = builder.Limit(qry.Count).Offset((qry.Page - 1) * qry.Count)
 
 	var entities []Car
-	builder.Find(&entities)
-
+	result := builder.Find(&entities)
+	if result.Error != nil {
+		log.Error("failed to search", slog.String("error", result.Error.Error()))
+		return nil, result.Error
+	}
 	log.Debug("searched cars", slog.Any("entities", entities))
 
 	log.Info("adapting entity to model")
@@ -66,6 +69,65 @@ func (r *Repository) List(qry query.CarList) (*[]model.Car, error) {
 	log.Debug("adapted entity to model", slog.Any("cars", cars))
 
 	return &cars, nil
+}
+
+func (r *Repository) Update(qry *query.CarUpdate) (*model.Car, error) {
+	const op = "repository.car.Update"
+	log := app_log.Logger().With(slog.String("op", op))
+
+	log.Debug("repository starting", slog.Any("qry", qry))
+
+	log.Info("finding car")
+	var car Car
+	result := r.db.First(&car, qry.ID)
+	if result.Error != nil {
+		log.Error("failed to find car", slog.String("error", result.Error.Error()))
+		return nil, result.Error
+	}
+	log.Debug("found car", slog.Any("car", car))
+
+	if qry.RegNum != nil {
+		car.RegNum = *qry.RegNum
+	}
+	if qry.Mark != nil {
+		car.Mark = *qry.Mark
+	}
+	if qry.Model != nil {
+		car.Model = *qry.Model
+	}
+	if qry.Year != nil {
+		car.Year = *qry.Year
+	}
+
+	log.Info("updating", slog.Any("car", car))
+	result = r.db.Save(&car)
+	if result.Error != nil {
+		log.Error("failed to update car", slog.String("error", result.Error.Error()))
+		return nil, result.Error
+	}
+	log.Debug("updated car", slog.Any("car", car))
+
+	log.Info("adapting entity to model")
+	m := ToModel(car)
+	log.Debug("adapted entity to model", slog.Any("m", m))
+
+	return &m, nil
+}
+
+func (r *Repository) Delete(qry *query.CarDelete) error {
+	const op = "repository.car.Delete"
+	log := app_log.Logger().With(slog.String("op", op))
+
+	log.Debug("repository starting", slog.Any("qry", qry))
+
+	log.Info("deleting car")
+	result := r.db.Delete(&Car{}, qry.ID)
+	if result.Error != nil {
+		log.Error("failed to delete car", slog.String("error", result.Error.Error()))
+		return result.Error
+	}
+
+	return nil
 }
 
 func ToModel(entity Car) model.Car {
