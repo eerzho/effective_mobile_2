@@ -14,6 +14,9 @@ import (
 	"effective_mobile_2/internal/database"
 	carH "effective_mobile_2/internal/handler/http/car"
 	carGR "effective_mobile_2/internal/repository/gorm/car"
+	peopleGR "effective_mobile_2/internal/repository/gorm/people"
+	//carInfoAR "effective_mobile_2/internal/repository/api/car_info"
+	carInfoMock "effective_mobile_2/internal/repository/mock/car_info"
 	carS "effective_mobile_2/internal/service/car"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -72,10 +75,18 @@ func setupMiddleware(router *chi.Mux) {
 }
 
 func setupEndpoints(router *chi.Mux) {
+
 	carRepository := carGR.New(database.Db().Gorm)
-	carService := carS.New(carRepository)
+	//carInfoRepository := carInfoAR.New(config.Cfg().Api.CarInfo)
+	carInfoRepository := carInfoMock.New()
+	peopleRepository := peopleGR.New(database.Db().Gorm)
+
+	carService := carS.New(carRepository, carInfoRepository, peopleRepository)
+
 	carHandler := carH.New(carService)
+
 	router.Get("/cars", carHandler.Index())
+	router.Post("/cars", carHandler.Store())
 	router.Patch("/cars/{id}", carHandler.Update())
 	router.Delete("/cars/{id}", carHandler.Delete())
 }

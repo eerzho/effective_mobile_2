@@ -12,6 +12,7 @@ type Config struct {
 	Postgres Postgres
 	Jwt      Jwt
 	Logger   Logger
+	Api      Api
 }
 
 type Http struct {
@@ -30,6 +31,10 @@ type Jwt struct {
 
 type Logger struct {
 	Level string `env:"LOG_LEVEL"`
+}
+
+type Api struct {
+	CarInfo string `env:"API_CAR_INFO"`
 }
 
 var cfg Config

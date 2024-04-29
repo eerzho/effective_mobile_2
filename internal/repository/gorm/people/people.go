@@ -1,4 +1,4 @@
-package poople
+package people
 
 import "effective_mobile_2/internal/dto/model"
 
@@ -10,10 +10,15 @@ type People struct {
 }
 
 func ToModel(entity People) model.People {
-	return model.People{
-		ID:         entity.ID,
-		Name:       entity.Name,
-		Surname:    entity.Surname,
-		Patronymic: entity.Patronymic,
+	people := model.People{
+		ID:      entity.ID,
+		Name:    entity.Name,
+		Surname: entity.Surname,
 	}
+
+	if entity.Patronymic != "" {
+		people.Patronymic = &entity.Patronymic
+	}
+
+	return people
 }

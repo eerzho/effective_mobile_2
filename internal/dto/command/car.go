@@ -10,7 +10,7 @@ type CarIndex struct {
 }
 
 type CarStore struct {
-	RegNums []string `schema:"regNums" validate:"required"`
+	RegNums []string `json:"regNums" validate:"required,min=1,dive,required"`
 }
 
 type CarUpdate struct {

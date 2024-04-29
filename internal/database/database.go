@@ -3,7 +3,7 @@ package database
 import (
 	"effective_mobile_2/internal/config"
 	"effective_mobile_2/internal/repository/gorm/car"
-	"effective_mobile_2/internal/repository/gorm/poople"
+	"effective_mobile_2/internal/repository/gorm/people"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -31,7 +31,7 @@ func Connect() error {
 
 func Migrate() error {
 	err := db.Gorm.AutoMigrate(
-		&poople.People{},
+		&people.People{},
 		&car.Car{},
 	)
 

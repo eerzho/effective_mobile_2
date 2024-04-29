@@ -10,7 +10,6 @@ import (
 
 	"effective_mobile_2/internal/app_log"
 	"effective_mobile_2/internal/dto/command"
-	"effective_mobile_2/internal/dto/model"
 	"effective_mobile_2/internal/dto/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -19,17 +18,11 @@ import (
 	"github.com/gorilla/schema"
 )
 
-type Service interface {
-	Index(cmd *command.CarIndex) (*[]model.Car, error)
-	Update(cmd *command.CarUpdate) (*model.Car, error)
-	Delete(cmd *command.CarDelete) error
-}
-
 type Handler struct {
-	service Service
+	service service
 }
 
-func New(service Service) *Handler {
+func New(service service) *Handler {
 	return &Handler{service: service}
 }
 
@@ -52,6 +45,54 @@ func (h *Handler) Index() http.HandlerFunc {
 
 		log.Info("executing service")
 		cars, err := h.service.Index(&cmd)
+		log.Debug("service result",
+			slog.Any("cars", cars),
+			slog.Any("err", err),
+		)
+		if err != nil {
+			log.Error("service error", slog.String("error", err.Error()))
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, r, response.Error{Error: err.Error()})
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		render.JSON(w, r, response.Success{Data: cars})
+	}
+}
+
+func (h *Handler) Store() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "handler.http.car.Store"
+		log := app_log.Logger().With(slog.String("op", op))
+
+		log.Debug("starting handler", slog.String("request_id", middleware.GetReqID(r.Context())))
+
+		log.Info("parsing body")
+		var cmd command.CarStore
+		if err := json.NewDecoder(r.Body).Decode(&cmd); err != nil {
+			log.Error("failed to parse body", slog.String("error", err.Error()))
+			w.WriteHeader(http.StatusBadRequest)
+			if errors.Is(err, io.EOF) {
+				render.JSON(w, r, response.Error{Error: "empty body"})
+				return
+			}
+			render.JSON(w, r, response.Error{Error: err.Error()})
+			return
+		}
+		log.Debug("parsed body", slog.Any("cmd", cmd))
+
+		log.Info("validating body")
+		if err := validator.New().Struct(cmd); err != nil {
+			log.Error("failed to validate body", slog.String("error", err.Error()))
+			w.WriteHeader(http.StatusBadRequest)
+			render.JSON(w, r, response.Error{Error: err.Error()})
+			return
+		}
+		log.Debug("validating body", slog.Any("cmd", cmd))
+
+		log.Info("executing service")
+		cars, err := h.service.Store(&cmd)
 		log.Debug("service result",
 			slog.Any("cars", cars),
 			slog.Any("err", err),
