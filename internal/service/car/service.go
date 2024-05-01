@@ -29,16 +29,20 @@ func New(
 
 func (s *Service) Index(cmd *command.CarIndex) (*[]model.Car, error) {
 	const op = "service.car.Index"
-	log := app_log.Logger().With(slog.String("op", op))
+	log := app_log.Logger().With(
+		slog.String("op", op),
+		slog.Any("cmd", cmd),
+	)
 
-	log.Debug("service starting", slog.Any("cmd", cmd))
+	log.Info("searching cars")
 
-	log.Info("parsing service command")
 	qry := query.CarList{
-		RegNum: cmd.RegNum,
-		Mark:   cmd.Mark,
-		Model:  cmd.Model,
-		Year:   cmd.Year,
+		RegNum:       cmd.RegNum,
+		Mark:         cmd.Mark,
+		Model:        cmd.Model,
+		Year:         cmd.Year,
+		OwnerName:    cmd.OwnerName,
+		OwnerSurname: cmd.OwnerSurname,
 	}
 	if cmd.Page == nil || *cmd.Page <= 0 {
 		qry.Page = 1
@@ -50,61 +54,49 @@ func (s *Service) Index(cmd *command.CarIndex) (*[]model.Car, error) {
 	} else {
 		qry.Count = *cmd.Count
 	}
-	log.Debug("parsed command", slog.Any("qry", qry))
-
-	log.Info("executing repository")
+	if cmd.Order == nil || *cmd.Order == "" || (*cmd.Order != "asc" && *cmd.Order != "desc") {
+		qry.Order = "desc"
+	} else {
+		qry.Order = *cmd.Order
+	}
 	cars, err := s.carRepository.List(&qry)
-	log.Debug("repository result",
-		slog.Any("cars", cars),
-		slog.Any("err", err),
-	)
 	if err != nil {
-		log.Error("repository error", slog.String("error", err.Error()))
+		log.Error("failed to search cars", slog.String("error", err.Error()))
 		return nil, err
 	}
+
+	log.Debug("searched cars", slog.Any("cars", cars))
 
 	return cars, nil
 }
 
 func (s *Service) Store(cmd *command.CarStore) (*[]model.Car, error) {
 	const op = "service.car.Store"
-	log := app_log.Logger().With(slog.String("op", op))
+	log := app_log.Logger().With(
+		slog.String("op", op),
+		slog.Any("cmd", cmd),
+	)
 
-	log.Debug("service starting", slog.Any("cmd", cmd))
+	log.Info("creating cars")
 
 	cars := make([]model.Car, len(cmd.RegNums))
 	for i, regNum := range cmd.RegNums {
-		log.Info("parsing service command")
 		qryCarInfo := query.CarInfo{RegNum: regNum}
-		log.Info("executing repository: getting car info")
 		carInfo, err := s.carInfoRepository.GetCarInfo(&qryCarInfo)
-		log.Debug("repository result",
-			slog.Any("carInfo", carInfo),
-			slog.Any("err", err),
-		)
 		if err != nil {
-			log.Error("repository error", slog.String("error", err.Error()))
+			log.Error("failed to get car info", slog.String("error", err.Error()))
 			return nil, err
 		}
-
-		log.Info("parsing service command")
 		qryPeopleCreate := query.PeopleCreate{
 			Name:       carInfo.Owner.Name,
 			Surname:    carInfo.Owner.Surname,
 			Patronymic: carInfo.Owner.Patronymic,
 		}
-		log.Info("executing repository: creating people")
 		people, err := s.ownerRepository.Create(&qryPeopleCreate)
-		log.Debug("repository result",
-			slog.Any("people", people),
-			slog.Any("err", err),
-		)
 		if err != nil {
-			log.Error("repository error", slog.String("error", err.Error()))
+			log.Error("failed to create people", slog.String("error", err.Error()))
 			return nil, err
 		}
-
-		log.Info("parsing service command")
 		qryCarCreate := query.CarCreate{
 			RegNum:  regNum,
 			Mark:    carInfo.Mark,
@@ -112,30 +104,28 @@ func (s *Service) Store(cmd *command.CarStore) (*[]model.Car, error) {
 			Year:    carInfo.Year,
 			OwnerID: people.ID,
 		}
-		log.Info("executing repository: creating car")
 		car, err := s.carRepository.Create(&qryCarCreate)
-		log.Debug("repository result",
-			slog.Any("car", car),
-			slog.Any("err", err),
-		)
 		if err != nil {
-			log.Error("repository error", slog.String("error", err.Error()))
+			log.Error("failed to create car", slog.String("error", err.Error()))
 			return nil, err
 		}
-
 		cars[i] = *car
 	}
+
+	log.Debug("created cars", slog.Any("cars", cars))
 
 	return &cars, nil
 }
 
 func (s *Service) Update(cmd *command.CarUpdate) (*model.Car, error) {
 	const op = "service.car.Update"
-	log := app_log.Logger().With(slog.String("op", op))
+	log := app_log.Logger().With(
+		slog.String("op", op),
+		slog.Any("cmd", cmd),
+	)
 
-	log.Debug("service starting", slog.Any("cmd", cmd))
+	log.Info("updating car")
 
-	log.Info("parsing service command")
 	qry := query.CarUpdate{
 		ID:     cmd.ID,
 		RegNum: cmd.RegNum,
@@ -143,39 +133,34 @@ func (s *Service) Update(cmd *command.CarUpdate) (*model.Car, error) {
 		Model:  cmd.Model,
 		Year:   cmd.Year,
 	}
-	log.Debug("parsed command", slog.Any("qry", qry))
-
-	log.Info("executing repository")
 	car, err := s.carRepository.Update(&qry)
-	log.Debug("repository result",
-		slog.Any("car", car),
-		slog.Any("err", err),
-	)
 	if err != nil {
-		log.Error("repository error", slog.String("error", err.Error()))
+		log.Error("failed to update car", slog.String("error", err.Error()))
 		return nil, err
 	}
+
+	log.Debug("updated car", slog.Any("car", car))
 
 	return car, nil
 }
 
 func (s *Service) Delete(cmd *command.CarDelete) error {
-	const op = "service.Car.Delete"
-	log := app_log.Logger().With(slog.String("op", op))
+	const op = "service.car.Delete"
+	log := app_log.Logger().With(
+		slog.String("op", op),
+		slog.Any("cmd", cmd),
+	)
 
-	log.Debug("service starting", slog.Any("cmd", cmd))
+	log.Info("deleting car")
 
-	log.Info("parsing service command")
 	qry := query.CarDelete{ID: cmd.ID}
-	log.Debug("parsed command", slog.Any("qry", qry))
-
-	log.Info("executing repository")
 	err := s.carRepository.Delete(&qry)
-	log.Debug("repository result", slog.Any("err", err))
 	if err != nil {
-		log.Error("repository error", slog.String("error", err.Error()))
+		log.Error("failed to delete car", slog.String("error", err.Error()))
 		return err
 	}
+
+	log.Debug("deleted car")
 
 	return nil
 }

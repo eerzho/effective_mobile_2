@@ -17,20 +17,19 @@ func New() *Repository {
 }
 
 func (r *Repository) GetCarInfo(qry *query.CarInfo) (*model.CarInfo, error) {
-	const op = "repository.carInfo.GetCarInfo"
-	log := app_log.Logger().With(slog.String("op", op))
+	const op = "repository.mock.car_info.GetCarInfo"
+	log := app_log.Logger().With(
+		slog.String("op", op),
+		slog.Any("qry", qry),
+	)
 
-	log.Debug("repository starting", slog.Any("qry", qry))
+	log.Info("getting car info")
 
 	t := time.Now()
-	log.Info("creating mock owner")
 	owner := model.People{
 		Name:    "Test Owner " + t.String(),
 		Surname: "Super",
 	}
-	log.Debug("created mock owner", slog.Any("owner", owner))
-
-	log.Info("creating mock car info")
 	year := t.Year()
 	carInfo := model.CarInfo{
 		Mark:  "Test Mark " + t.String(),
@@ -38,7 +37,8 @@ func (r *Repository) GetCarInfo(qry *query.CarInfo) (*model.CarInfo, error) {
 		Owner: &owner,
 		Year:  &year,
 	}
-	log.Debug("created mock car info", slog.Any("carInfo", carInfo))
+
+	log.Debug("got car info", slog.Any("carInfo", carInfo))
 
 	return &carInfo, nil
 }

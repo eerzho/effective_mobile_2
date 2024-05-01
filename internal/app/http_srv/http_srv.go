@@ -37,11 +37,8 @@ func Run() error {
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	httpSrv := http.Server{
-		Addr:         config.Cfg().Http.Address,
-		Handler:      router,
-		ReadTimeout:  config.Cfg().Http.Timeout,
-		WriteTimeout: config.Cfg().Http.Timeout,
-		IdleTimeout:  config.Cfg().Http.IdleTimeout,
+		Addr:    config.Cfg().Http.Address,
+		Handler: router,
 	}
 
 	log.Info("serving http server")

@@ -1,8 +1,6 @@
 package config
 
 import (
-	"time"
-
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
 )
@@ -10,23 +8,16 @@ import (
 type Config struct {
 	Http     Http
 	Postgres Postgres
-	Jwt      Jwt
 	Logger   Logger
 	Api      Api
 }
 
 type Http struct {
-	Address     string        `env:"HTTP_ADDRESS"`
-	Timeout     time.Duration `env:"HTTP_TIMEOUT"`
-	IdleTimeout time.Duration `env:"HTTP_IDLE_TIMEOUT"`
+	Address string `env:"HTTP_ADDRESS"`
 }
 
 type Postgres struct {
 	Url string `env:"POSTGRES_URL"`
-}
-
-type Jwt struct {
-	SecretKey string `env:"JWT_SECRET_KEY"`
 }
 
 type Logger struct {

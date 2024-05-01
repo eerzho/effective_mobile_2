@@ -15,6 +15,8 @@ func main() {
 		log.Fatalf("failed to parse config: %v", err)
 	}
 
+	log.Print(config.Cfg())
+
 	log.Print("connecting database")
 	if err := database.Connect(); err != nil {
 		log.Fatalf("failed to connect to database: %v", err)

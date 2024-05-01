@@ -1,12 +1,15 @@
 package command
 
 type CarIndex struct {
-	RegNum *string `schema:"regNum"`
-	Mark   *string `schema:"mark"`
-	Model  *string `schema:"model"`
-	Year   *int    `schema:"year"`
-	Page   *int    `schema:"page"`
-	Count  *int    `schema:"count"`
+	RegNum       *string `schema:"regNum"`
+	Mark         *string `schema:"mark"`
+	Model        *string `schema:"model"`
+	Year         *int    `schema:"year"`
+	OwnerName    *string `schema:"ownerName"`
+	OwnerSurname *string `schema:"ownerSurname"`
+	Order        *string `schema:"order"`
+	Page         *int    `schema:"page"`
+	Count        *int    `schema:"count"`
 }
 
 type CarStore struct {
