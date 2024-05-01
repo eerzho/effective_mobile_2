@@ -1,27 +1,27 @@
 package command
 
 type CarIndex struct {
-	RegNum       *string `schema:"regNum"`
-	Mark         *string `schema:"mark"`
-	Model        *string `schema:"model"`
-	Year         *int    `schema:"year"`
-	OwnerName    *string `schema:"ownerName"`
-	OwnerSurname *string `schema:"ownerSurname"`
-	Order        *string `schema:"order"`
-	Page         *int    `schema:"page"`
-	Count        *int    `schema:"count"`
+	RegNum       *string
+	Mark         *string
+	Model        *string
+	Year         *int
+	OwnerName    *string
+	OwnerSurname *string
+	Order        *string
+	Page         *int
+	Count        *int
 }
 
 type CarStore struct {
-	RegNums []string `json:"regNums" validate:"required,min=1,dive,required"`
+	RegNums []string
 }
 
 type CarUpdate struct {
 	ID     int
-	RegNum *string `json:"regNum" validate:"omitempty,ne="`
-	Mark   *string `json:"mark" validate:"omitempty,ne="`
-	Model  *string `json:"model" validate:"omitempty,ne="`
-	Year   *int    `json:"year" validate:"omitempty,gte=1886,lte=2023"`
+	RegNum *string
+	Mark   *string
+	Model  *string
+	Year   *int
 }
 
 type CarDelete struct {

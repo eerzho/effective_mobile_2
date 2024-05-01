@@ -1,0 +1,227 @@
+definitions:
+  model.Car:
+    properties:
+      id:
+        type: integer
+      mark:
+        type: string
+      model:
+        type: string
+      owner:
+        $ref: '#/definitions/model.People'
+      ownerID:
+        type: integer
+      regNum:
+        type: string
+      year:
+        type: integer
+    type: object
+  model.People:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
+  request.CarStore:
+    properties:
+      regNums:
+        items:
+          type: string
+        minItems: 1
+        type: array
+    required:
+    - regNums
+    type: object
+  request.CarUpdate:
+    properties:
+      mark:
+        type: string
+      model:
+        type: string
+      regNum:
+        type: string
+      year:
+        maximum: 2023
+        minimum: 1886
+        type: integer
+    type: object
+  response.Error:
+    properties:
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/cars:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of cars filtered by various parameters
+      parameters:
+      - description: Registration Number filter
+        in: query
+        name: regNum
+        type: string
+      - description: Car mark filter
+        in: query
+        name: mark
+        type: string
+      - description: Car model filter
+        in: query
+        name: model
+        type: string
+      - description: Car year filter
+        in: query
+        name: year
+        type: integer
+      - description: Owner name filter
+        in: query
+        name: ownerName
+        type: string
+      - description: Owner surname filter
+        in: query
+        name: ownerSurname
+        type: string
+      - description: Order of results (asc or desc)
+        in: query
+        name: order
+        type: string
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: count
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Car'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: List all cars
+      tags:
+      - cars
+    post:
+      consumes:
+      - application/json
+      description: Add one or more new cars to the database
+      parameters:
+      - description: New car details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CarStore'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Car'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Create new cars
+      tags:
+      - cars
+  /api/cars/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a car by its ID
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Remove a car
+      tags:
+      - cars
+    patch:
+      consumes:
+      - application/json
+      description: Update details of an existing car by its ID
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Car update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CarUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Car'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Update car details
+      tags:
+      - cars
+swagger: "2.0"

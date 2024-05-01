@@ -9,12 +9,15 @@ import (
 	"syscall"
 	"time"
 
+	_ "effective_mobile_2/docs"
 	"effective_mobile_2/internal/app_log"
 	"effective_mobile_2/internal/config"
 	"effective_mobile_2/internal/database"
 	carH "effective_mobile_2/internal/handler/http/car"
 	carGR "effective_mobile_2/internal/repository/gorm/car"
 	peopleGR "effective_mobile_2/internal/repository/gorm/people"
+	httpSwagger "github.com/swaggo/http-swagger"
+
 	//carInfoAR "effective_mobile_2/internal/repository/api/car_info"
 	carInfoMock "effective_mobile_2/internal/repository/mock/car_info"
 	carS "effective_mobile_2/internal/service/car"
@@ -73,6 +76,10 @@ func setupMiddleware(router *chi.Mux) {
 
 func setupEndpoints(router *chi.Mux) {
 
+	router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("swagger/doc.json"), // The url pointing to API definition
+	))
+
 	carRepository := carGR.New(database.Db().Gorm)
 	//carInfoRepository := carInfoAR.New(config.Cfg().Api.CarInfo)
 	carInfoRepository := carInfoMock.New()
@@ -82,8 +89,8 @@ func setupEndpoints(router *chi.Mux) {
 
 	carHandler := carH.New(carService)
 
-	router.Get("/cars", carHandler.Index())
-	router.Post("/cars", carHandler.Store())
-	router.Patch("/cars/{id}", carHandler.Update())
-	router.Delete("/cars/{id}", carHandler.Delete())
+	router.Get("/api/cars", carHandler.Index())
+	router.Post("/api/cars", carHandler.Store())
+	router.Patch("/api/cars/{id}", carHandler.Update())
+	router.Delete("/api/cars/{id}", carHandler.Delete())
 }

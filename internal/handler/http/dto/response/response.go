@@ -15,10 +15,6 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-type Success struct {
-	Data interface{} `json:"data,omitempty"`
-}
-
 func Bad(w *http.ResponseWriter, r *http.Request, err error) {
 	var code int
 	var message string
@@ -49,5 +45,5 @@ func Bad(w *http.ResponseWriter, r *http.Request, err error) {
 
 func Ok(w *http.ResponseWriter, r *http.Request, data interface{}) {
 	(*w).WriteHeader(http.StatusOK)
-	render.JSON(*w, r, Success{Data: data})
+	render.JSON(*w, r, data)
 }
