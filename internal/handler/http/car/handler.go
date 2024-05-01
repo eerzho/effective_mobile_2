@@ -233,6 +233,6 @@ func (h *Handler) Delete() http.HandlerFunc {
 
 		log.Debug("deleted car")
 
-		response.Ok(&w, r, "")
+		response.Ok(&w, r, nil)
 	}
 }

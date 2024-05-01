@@ -18,8 +18,8 @@ import (
 	peopleGR "effective_mobile_2/internal/repository/gorm/people"
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	//carInfoAR "effective_mobile_2/internal/repository/api/car_info"
-	carInfoMock "effective_mobile_2/internal/repository/mock/car_info"
+	carInfoAR "effective_mobile_2/internal/repository/api/car_info"
+	//carInfoMock "effective_mobile_2/internal/repository/mock/car_info"
 	carS "effective_mobile_2/internal/service/car"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -81,8 +81,8 @@ func setupEndpoints(router *chi.Mux) {
 	))
 
 	carRepository := carGR.New(database.Db().Gorm)
-	//carInfoRepository := carInfoAR.New(config.Cfg().Api.CarInfo)
-	carInfoRepository := carInfoMock.New()
+	carInfoRepository := carInfoAR.New(config.Cfg().Api.CarInfo)
+	//carInfoRepository := carInfoMock.New()
 	peopleRepository := peopleGR.New(database.Db().Gorm)
 
 	carService := carS.New(carRepository, carInfoRepository, peopleRepository)
